@@ -1,0 +1,187 @@
+[17.10.2026 17:42] ONUR BEY: <!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniBrain AI — Shaxsiy AI Assistent</title>
+  <style>
+    :root {
+      --bg-color: #0b0716;
+      --card-bg: #16102b;
+      --accent-color: #00f2fe;
+      --purple-glow: #7b2cbf;
+      --text-color: #ffffff;
+      --text-dim: #a0aec0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; padding: 15px; }
+
+    .header { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(22, 16, 43, 0.8); border-radius: 16px; border: 1px solid rgba(0, 242, 254, 0.2); }
+    .header h1 { font-size: 24px; color: var(--accent-color); font-weight: 700; }
+    .header p { font-size: 13px; color: var(--text-dim); margin-top: 5px; }
+
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 12px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { background: linear-gradient(135deg, var(--accent-color), var(--purple-glow)); color: #fff; border: none; }
+
+    .tab-content { display: none; background: var(--card-bg); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); }
+    .tab-content.active { display: block; }
+
+    label { display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-dim); }
+    textarea, input { width: 100%; padding: 12px; background: #0b0716; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 14px; margin-bottom: 15px; outline: none; }
+    textarea { height: 130px; resize: none; }
+
+    .btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #00f2fe, #4facfe); border: none; border-radius: 12px; color: #000; font-weight: 700; font-size: 16px; cursor: pointer; }
+    .btn:active { opacity: 0.8; }
+
+    .result-box { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; border-left: 4px solid var(--accent-color); font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+
+    .chat-box { height: 280px; overflow-y: auto; background: #0b0716; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; }
+    .msg.bot { background: #231842; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
+    .msg.user { background: var(--accent-color); color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 500; }
+
+    .voice-controls { display: flex; gap: 10px; }
+    .voice-btn { flex: 1; padding: 12px; background: #231842; border: 1px solid var(--accent-color); color: var(--accent-color); border-radius: 10px; font-weight: 600; cursor: pointer; }
+    #voiceBtn { background: #7b2cbf; color: #fff; border: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>UniBrain AI</h1>
+    <p>Shaxsiy O'quv Assistent va Imtihon Simulyatori</p>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('konspekt', this)">📖 Konspekt & Test</button>
+    <button class="tab-btn" onclick="switchTab('domla', this)">🎓 AI-Domla Simulyatori</button>
+  </div>
+
+  <div id="konspekt" class="tab-content active">
+    <label>Ma'ruza matni yoki mavzuni kiriting:</label>
+    <textarea id="lectureText" placeholder="Masalan: Fizika, matematika yoki dasturlash bo'yicha ma'ruza matnini joylashtiring..."></textarea>
+
+    <button class="btn" onclick="generateSummary()">AI Tahlil va Test Yaratish</button>
+    <div id="summaryResult" class="result-box" style="display:none;"></div>
+  </div>
+[17.10.2026 17:42] ONUR BEY: <div id="domla" class="tab-content">
+    <div class="chat-box" id="chatBox">
+      <div class="msg bot">Assalomu alaykum! Men sizning AI-Domlangizman. Imtihon topshirmoqchi bo'lgan faningizni ayting yoki javobingizni yozing!</div>
+    </div>
+
+    <input type="text" id="userInput" placeholder="Javobingizni yozing..." onkeypress="if(event.key==='Enter') sendMessage()">
+    
+    <div class="voice-controls">
+      <button class="voice-btn" onclick="sendMessage()">Yuborish</button>
+      <button class="voice-btn" id="voiceBtn" onclick="speakLastBotMsg()">🔊 Ovozli eshitish</button>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId, btnElement) {
+      var tabs = document.querySelectorAll('.tab-content');
+      var btns = document.querySelectorAll('.tab-btn');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+      document.getElementById(tabId).classList.add('active');
+      btnElement.classList.add('active');
+    }
+
+    function generateSummary() {
+      var text = document.getElementById('lectureText').value.trim();
+      var resultBox = document.getElementById('summaryResult');
+      var btn = document.querySelector('#konspekt .btn');
+
+      if (!text) {
+        alert("Iltimos, ma'ruza matnini kiriting!");
+        return;
+      }
+
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = "⏳ AI ma'ruzani tahlil qilmoqda... Kuting...";
+      btn.disabled = true;
+      btn.style.opacity = "0.6";
+
+      var promptText = "Sen universitet talabalari uchun aqlli yordamchisan. Quyidagi matnni tahlil qilib, eng muhim 3 ta qisqa tezisni va imtihon uchun 2 ta test savolini o'zbek tilida chiroyli formatda yaratib ber:\n\n" + text;
+
+      fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.error) {
+          resultBox.innerHTML = "❌ Xatolik: " + data.error;
+        } else {
+          resultBox.innerHTML = data.text.split('\n').join('<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        }
+      })
+      .catch(function(error) {
+        resultBox.innerHTML = "❌ Server bilan ulanishda xatolik yuz berdi.";
+      })
+      .finally(function() {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+      });
+    }
+
+    function sendMessage() {
+      var input = document.getElementById('userInput');
+      var text = input.value.trim();
+      if (!text) return;
+
+      addMsg(text, 'user', null);
+      input.value = '';
+
+      var typingId = "typing-" + Date.now();
+      addMsg("⏳ Domla javob yozmoqda...", 'bot', typingId);
+
+      var promptText = "Sen OTMning talabchan, lekin adolatli domlasisan. Talaba senga javob yozadi. Uning javobini qisqacha tahlil qil, ball ber (10 ballik tizimda) va mavzuni chuqurlashtirish uchun keyingi savolni so'ra. Javoblar doim o'zbek tilida va qisqa bo'lsin. Talaba javobi: " + text;
+
+      fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.parentNode.removeChild(typingEl);
+
+        if (data.error) {
+          addMsg("❌ Xatolik: " + data.error, 'bot', null);
+        } else {
+          addMsg(data.text, 'bot', null);
+        }
+      })
+      .catch(function(error) {
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.parentNode.removeChild(typingEl);
+        addMsg("❌ Server bilan bog'lanishda xatolik.", 'bot', null);
+      });
+    }
+ function addMsg(text, sender, id) {
+      var chatBox = document.getElementById('chatBox');
+      var div = document.createElement('div');
+      div.className = "msg " + sender;
+      if (id) div.id = id;
+      div.innerHTML = text.split('\n').join('<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function speakLastBotMsg() {
+      var botMsgs = document.querySelectorAll('.msg.bot');
+      if (botMsgs.length === 0) return;
+      var lastMsg = botMsgs[botMsgs.length - 1].innerText;
+      
+      var speech = new SpeechSynthesisUtterance(lastMsg);
+      speech.lang = 'uz-UZ';
+      window.speechSynthesis.speak(speech);
+    }
+  </script>
+</body>
+</html>
