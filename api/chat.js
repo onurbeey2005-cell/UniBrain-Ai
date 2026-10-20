@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API kalit topilmadi' });
+    return res.status(500).json({ error: 'API kalit topilmadi (GEMINI_API_KEY)' });
   }
 
   try {
@@ -34,4 +34,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ error: "Server bilan ulanishda xatolik yuz berdi" });
   }
-};
+}
