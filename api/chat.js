@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API kalit topilmadi (AQ.Ab8RN6ITHMJFx3bGnlqQY3x4V7TgufwWw4-DTI03Ha5taNwgEA)' });
+    return res.status(500).json({ error: 'API kalit topilmadi (AQ.Ab8RN6KwH3LofzluYlJmloj0gTEp6589mVX59VU-vwhqI9akWQ)' });
   }
 
   try {
